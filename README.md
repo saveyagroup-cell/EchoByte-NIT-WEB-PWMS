@@ -20,7 +20,7 @@ Explore the live website here:
 
 View the source code and contribute to the project:
 
-👉 **  **
+👉 **https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git**
 
 ## Part 1 — Supabase Project Banayein (agar pehle se nahi hai)
 
