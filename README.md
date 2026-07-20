@@ -7,6 +7,21 @@ uske baad app seedha chalega.
 
 ---
 
+## 🌐 Live Demo
+
+🚀 **PWMS(Plastic Waste Management System)**
+
+Explore the live website here:
+
+👉 **https://echobyte-nit-web-pwms.onrender.com**
+
+
+## 💻 GitHub Repository
+
+View the source code and contribute to the project:
+
+👉 **  **
+
 ## Part 1 — Supabase Project Banayein (agar pehle se nahi hai)
 
 1. [supabase.com](https://supabase.com) par jaake **sign up / login** karein.
