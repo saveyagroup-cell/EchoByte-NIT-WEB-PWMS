@@ -1,0 +1,8 @@
+streamlit>=1.37
+pandas>=2.0
+requests>=2.31
+folium>=0.16
+streamlit-folium>=0.20
+streamlit-geolocation>=0.0.10
+supabase>=2.10
+fpdf2>=2.7
