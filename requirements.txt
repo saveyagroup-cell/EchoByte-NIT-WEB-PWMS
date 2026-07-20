@@ -6,3 +6,4 @@ streamlit-folium>=0.20
 streamlit-geolocation>=0.0.10
 supabase>=2.10
 fpdf2>=2.7
+matplotlib>=3.8
