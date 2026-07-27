@@ -303,11 +303,11 @@ Render will install the dependencies and start the Streamlit application.
 
 | Team Member       | Role      | Responsibility                   |
 | ----------------- | --------- | -------------------------------- |
-| **[Nomend Kumar Sahu]** | Team Lead | Project Management & Development |
-| **[Yogesh Kumar Yadav]** | Developer | Backend & Supabase Integration   |
-| **[Harsha Sahu]** | Developer | Frontend & UI/UX                 |
-| **[Dagendra Kumar Sahu]** | Developer | Maps & Route Optimization        |
-| **[Jayant Verma]** | Developer | Maps & Route Optimization        |
+| **Nomend Kumar Sahu** | Team Lead | Project Management & Development |
+| **Yogesh Kumar Yadav** | Developer | Backend & Supabase Integration   |
+| **Harsha Sahu** | Developer | Frontend & UI/UX                 |
+| **Dagendra Kumar Sahu** | Developer | Maps & Route Optimization        |
+| **Jayant Verma** | Developer | Maps & Route Optimization        |
 
 
 ---
@@ -319,7 +319,8 @@ The following section demonstrates the major modules and interfaces of the EchoB
 ## 🏠 Main Page
 
 **Government of Chhattisgarh · Urban Administration & Development**
-<img width="358" height="284" alt="Echobyte Repository" src="https://github.com/user-attachments/assets/04be4eb8-e5fc-4fad-be18-1c8a3188bbca" />
+<img width="1315" height="595" alt="image" src="https://github.com/user-attachments/assets/98f3488d-24fb-48f3-b99a-92ab424ac590" />
+
 
 ### EchoByte
 
