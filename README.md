@@ -1,126 +1,266 @@
-# SentinelMRF — Streamlit + Supabase (anon key) Edition
+# SentinelMRF — Streamlit + Supabase (Anon Key) Edition
 
-Ab app **Supabase Project URL + anon public key** se connect hota hai — koi
-database password, direct Postgres connection, ya service_role key nahi
-chahiye. Tables tum khud ek SQL script chala ke banaoge (`schema.sql`), aur
-uske baad app seedha chalega.
+The app now connects using the **Supabase Project URL + anon public key** — no database password, direct PostgreSQL connection, or `service_role` key is required.
+
+You only need to create the required tables once by running the provided `schema.sql` script. After that, the application is ready to run.
 
 ---
 
 ## 🌐 Live Demo
 
-🚀 **PWMS(Plastic Waste Management System)**
+🚀 **PWMS (Plastic Waste Management System)**
 
 Explore the live website here:
 
-👉 **https://echobyte-nit-web-pwms.onrender.com**
+👉 https://echobyte-nit-web-pwms.onrender.com
 
+---
 
 ## 💻 GitHub Repository
 
 View the source code and contribute to the project:
 
-👉 **https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git**
-
-## Part 1 — Supabase Project Banayein (agar pehle se nahi hai)
-
-1. [supabase.com](https://supabase.com) par jaake **sign up / login** karein.
-2. **"New Project"** dabayein, naam/password/region set karke **"Create new
-   project"** dabayein — 1-2 minute mein ban jayega.
-   (Yeh database password sirf project setup ke liye hai, app mein nahi
-   lagega — humein sirf URL aur anon key chahiye, neeche Part 3 mein.)
+👉 https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git
 
 ---
 
-## Part 2 — SQL Chalayein (Tables + Storage Bucket Banayein)
+## Part 1 — Create a Supabase Project
 
-1. Project ke andar bayi taraf **SQL Editor** par jayein.
-2. **"New query"** dabayein.
-3. Is repo ki `schema.sql` file ka poora content copy karke wahan paste karein.
-4. **"Run"** dabayein.
+If you already have a Supabase project, you can skip this section.
 
-Yeh ek hi click mein:
-- `users` aur `garbage_reports` tables bana dega
-- Row Level Security enable karke `anon` role ko access dega (isliye app
-  bina password ke, sirf anon key se kaam kar payega)
-- `profile-photos` naam ka ek **public Storage bucket** bana dega, jisme
-  profile photos upload hongi
+1. Go to **Supabase** and sign up or log in.
+2. Click **"New Project"**.
+3. Set the project name, database password, and region.
+4. Click **"Create new project"**.
+5. Wait approximately 1–2 minutes for the project to be created.
 
-Bas — ab dobara yeh step karne ki zarurat nahi, sirf ek baar ka setup hai.
+> **Note:** The database password is only required during project setup. The application itself does not use it. We only need the **Project URL** and **anon public key**, which are explained in Part 3.
 
 ---
 
-## Part 3 — Project URL + Anon Key App Mein Daalein
+## Part 2 — Run the SQL Script
 
-1. Supabase Dashboard mein: **Project Settings (⚙️)** → **API**.
-2. Yahan se 2 values note karein:
-   - **Project URL** — jaise `https://abcxyzprojectref.supabase.co`
-   - **anon public** key (Project API keys section mein — `service_role`
-     wali key **nahi**, `anon` `public` wali)
+The next step is to create the required database tables and Storage bucket.
 
-Do tarike hain inhe app mein daalne ke:
+1. Open your Supabase project.
+2. From the left sidebar, go to **SQL Editor**.
+3. Click **"New query"**.
+4. Open the `schema.sql` file included in this repository.
+5. Copy its entire contents and paste them into the SQL Editor.
+6. Click **"Run"**.
 
-### Option A — Seedha `supabase_client.py` mein edit karein (sabse fast)
+Running this script will automatically:
+
+* Create the `users` table.
+* Create the `garbage_reports` table.
+* Enable Row Level Security (RLS).
+* Give the `anon` role the required access so the application can work using only the anon key.
+* Create a public Supabase Storage bucket named `profile-photos`.
+* Configure the bucket for storing user profile photos.
+
+This setup only needs to be performed **once**.
+
+---
+
+## Part 3 — Add the Project URL and Anon Key
+
+In the Supabase Dashboard, go to:
+
+**Project Settings (⚙️) → API**
+
+Copy the following two values:
+
+* **Project URL** — for example: `https://abcxyzprojectref.supabase.co`
+* **anon public key** — available under the Project API Keys section.
+
+> ⚠️ Do **not** use the `service_role` key. Use the `anon` / `public` key.
+
+There are two ways to configure these values.
+
+### Option A — Edit `supabase_client.py`
+
+This is the fastest method for local testing.
 
 ```python
-SUPABASE_URL = _get_secret("SUPABASE_URL", "https://YOUR-PROJECT-REF.supabase.co")
-SUPABASE_ANON_KEY = _get_secret("SUPABASE_ANON_KEY", "YOUR-ANON-PUBLIC-KEY")
+SUPABASE_URL = _get_secret(
+    "SUPABASE_URL",
+    "https://YOUR-PROJECT-REF.supabase.co"
+)
+
+SUPABASE_ANON_KEY = _get_secret(
+    "SUPABASE_ANON_KEY",
+    "YOUR-ANON-PUBLIC-KEY"
+)
 ```
-Placeholder values ko apni actual values se replace kar dein.
 
-### Option B — Streamlit secrets file (deployment ke liye recommended)
+Replace the placeholder values with your actual Supabase credentials.
 
-Project folder mein `.streamlit/secrets.toml` banayein:
+### Option B — Use Streamlit Secrets
+
+This method is recommended for deployment.
+
+Create the following file inside your project:
+
+`.streamlit/secrets.toml`
+
+Add:
+
 ```toml
 SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co"
 SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY"
 ```
-`supabase_client.py` khud pehle secrets file check karta hai, phir
-environment variables, phir hardcoded default.
 
-**Streamlit Community Cloud par deploy karte waqt:** App settings →
-**"Secrets"** tab mein yehi 2 lines paste kar dein.
+The `supabase_client.py` file automatically checks for configuration values in the following order:
 
-⚠️ `.streamlit/secrets.toml` ko GitHub par public push na karein (`.gitignore`
-mein add kar dein).
+1. Streamlit secrets
+2. Environment variables
+3. Hardcoded default values
+
+### Streamlit Community Cloud
+
+When deploying on Streamlit Community Cloud:
+
+Go to:
+
+**App Settings → Secrets**
+
+Then paste:
+
+```toml
+SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co"
+SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY"
+```
+
+> ⚠️ Do not push `.streamlit/secrets.toml` to a public GitHub repository. Add it to `.gitignore`.
 
 ---
 
-## Part 4 — Install &amp; Run
+## Part 4 — Install and Run
+
+Install all required dependencies:
 
 ```bash
 pip install -r requirements.txt
+```
+
+Run the Streamlit application:
+
+```bash
 streamlit run app.py
 ```
 
-Bas. Koi `init_db()` ya migration step nahi hai — tables Part 2 mein SQL se
-hi ban chuke hain.
+That's it.
+
+There is no separate `init_db()` or migration step because all required tables were already created using the SQL script in Part 2.
 
 ---
 
-## Roles
+# 👥 User Roles
 
-- **SHG** (👩‍🌾) — Mobile number + password se signup/login. Report garbage
-  form mein **"Use my current location"** button hai (jaise Blinkit/Zomato —
-  browser GPS permission mangega), ya manual location search (OpenStreetMap
-  Nominatim, free) bhi available hai. Quantity, description ke saath submit
-  karte hi ek 4-digit OTP generate hota hai jo driver ko pickup ke waqt dena hai.
-- **Driver** (🚚) — Mobile number + password se login. "Optimize Route (OSRM)"
-  button pending reports ko real lat/lng se Nearest-Neighbor order deta hai,
-  phir OSRM se asli road route map (Folium) par khींचता hai. Har stop card par
-  SHG ka **naam aur mobile number** bhi dikhta hai. OTP verify hote hi SHG ka
-  wallet automatically credit hota hai (₹2/kg — `app.py` mein `payout` line se
-  badal sakte hain).
-- **Government** (🏛️) — Email + password se login. KPIs, daily trend chart,
-  village-wise bar chart, wallet distribution table, recent activity log.
+The system supports three primary roles:
 
-Teeno roles ke signup form mein **profile photo upload (optional)** hai —
-photo Supabase Storage bucket mein jaati hai, table mein sirf uska URL save
-hota hai. Driver signup mein ek extra **Vehicle Number** field bhi hai.
+## 👩‍🌾 SHG — Self-Help Group
+
+SHG users can sign up and log in using their **mobile number and password**.
+
+The garbage reporting form provides a **"Use my current location"** option.
+
+Similar to applications such as Blinkit or Zomato, the browser requests GPS/location permission from the user.
+
+Alternatively, users can manually search for their location using **OpenStreetMap Nominatim**, which is available as a free geocoding service.
+
+An SHG user can submit:
+
+* Location
+* Plastic waste quantity
+* Description
+* Other report information
+
+After submitting the report, the system automatically generates a **4-digit OTP**.
+
+The SHG member provides this OTP to the driver during waste pickup to verify the collection.
 
 ---
 
-## Schema (reference ke liye — asli file `schema.sql` hai)
+## 🚚 Driver
+
+Drivers log in using their **mobile number and password**.
+
+The Driver Dashboard includes an:
+
+**"Optimize Route (OSRM)"** button.
+
+When clicked, the system:
+
+1. Retrieves pending garbage reports.
+2. Uses their actual latitude and longitude coordinates.
+3. Applies a **Nearest-Neighbor route optimization approach**.
+4. Uses OSRM to calculate the actual road route.
+5. Displays the optimized route on an interactive **Folium map**.
+
+Each collection stop displays important SHG information, including:
+
+* SHG name
+* Mobile number
+* Location
+* Waste quantity
+* Collection information
+
+During pickup, the driver enters the OTP provided by the SHG member.
+
+Once the OTP is successfully verified:
+
+* The report is marked as collected.
+* The collection is confirmed.
+* The SHG wallet is automatically credited.
+
+The current payout rate is:
+
+**₹2 per kg**
+
+This can be modified using the `payout` logic inside `app.py`.
+
+---
+
+## 🏛️ Government
+
+Government users log in using their **email and password**.
+
+The Government Dashboard provides monitoring and analytics features such as:
+
+* Key Performance Indicators (KPIs)
+* Daily collection trend charts
+* Village-wise collection bar charts
+* SHG wallet distribution table
+* Recent activity log
+
+This allows government authorities to monitor plastic waste collection activities and overall system performance.
+
+---
+
+# 📸 Profile Photos
+
+All three roles support an optional **profile photo upload** during signup.
+
+The actual image is uploaded to the Supabase Storage bucket:
+
+`profile-photos`
+
+Only the image URL is stored in the database table.
+
+Driver registration also contains an additional:
+
+**Vehicle Number**
+
+field.
+
+---
+
+# 🗄️ Database Schema
+
+The actual database setup is available in `schema.sql`.
+
+For reference, the main tables are:
 
 ```sql
 create table users (
@@ -146,7 +286,8 @@ create table garbage_reports (
   lng double precision,
   quantity_kg numeric(10,2) not null,
   description text,
-  status text default 'pending' check (status in ('pending','assigned','collected')),
+  status text default 'pending'
+    check (status in ('pending','assigned','collected')),
   otp text,
   created_at timestamptz default now(),
   collected_at timestamptz
@@ -155,34 +296,158 @@ create table garbage_reports (
 
 ---
 
-## ⚠️ Security Note (zaroor padhein)
+# ⚠️ Security Note
 
-`schema.sql` in dono tables par RLS policy set karta hai jo `anon` role ko
-**pura read/write access** deti hai (`using (true)`) — kyunki yeh app sirf
-anon key use karta hai, koi service_role ya server-side session nahi.
+Please read this section carefully.
 
-Iska matlab: jo bhi tumhari Project URL + anon key jaanta hai, woh Supabase
-REST API se seedha is data ko padh/likh sakta hai (anon key GitHub jaisi
-public jagah par kabhi na daalein, phir bhi ise "secret" jaisa treat karein).
-Ek internal Chhattisgarh government pilot tool ke liye yeh acceptable trade-off
-hai (simplicity ke liye). Agar aage chalke isse zyada public-facing/sensitive
-banana ho, to consider karein:
-- Row-level ownership checks add karna RLS policies mein (e.g. SHG sirf apna
-  data dekh/badal sake)
-- Ya phir service_role key + apna khud ka server-side auth layer
+The `schema.sql` file configures Row Level Security policies for both tables that currently allow the `anon` role **full read/write access** using policies equivalent to:
+
+```sql
+using (true)
+```
+
+This approach is used because the application operates entirely with the Supabase anon key and does not use a `service_role` key or server-side authenticated database session.
+
+This means that anyone who obtains your **Project URL + anon key** may potentially interact directly with the Supabase REST API and read or modify accessible data.
+
+For an internal Chhattisgarh government pilot or demonstration project, this architecture may provide a simple development setup.
+
+However, for a public-facing or production application, stronger security controls should be implemented.
+
+Recommended improvements include:
+
+* Add row-level ownership checks to RLS policies so SHG users can only access or modify their own data.
+* Implement proper Supabase Authentication and user-based RLS policies.
+* Alternatively, use a secure server-side backend with the `service_role` key stored only on the server.
+* Never expose the `service_role` key in frontend code or a public repository.
 
 ---
 
-## Notes / production ke liye aage kya sudharein
+# 🚀 Recommended Production Improvements
 
-- Password hashing abhi plain `sha256` hai (demo ke liye theek hai). Production
-  mein `bcrypt` ya `argon2` use karein.
-- Wallet credit "fetch current value, phir update" pattern se ho raha hai
-  (Postgrest mein seedha `wallet = wallet + x` jaisa atomic increment query-builder
-  se nahi hota) — bahut high concurrency mein race condition ban sakti hai;
-  production ke liye ek Postgres function (RPC) banana better hoga.
-- OTP sirf pickup-verification ke liye hai, login ke liye nahi (login
-  mobile+password se hai).
-- Nominatim aur OSRM dono free public services hain — bahut zyada requests
-  bhejne par rate-limit ho sakta hai; production ke liye apna khud ka hosted
-  OSRM instance ya paid geocoding service consider karein.
+### 1. Stronger Password Hashing
+
+Passwords are currently hashed using plain `SHA-256`.
+
+This may be acceptable for a prototype or demonstration, but it should not be used as a production password-storage mechanism.
+
+For production, use a password hashing algorithm such as:
+
+* `bcrypt`
+* `Argon2`
+
+---
+
+### 2. Atomic Wallet Transactions
+
+The current wallet credit process follows this pattern:
+
+```text
+Fetch current wallet balance
+        ↓
+Calculate new balance
+        ↓
+Update wallet
+```
+
+PostgREST's standard query builder does not directly provide an atomic operation such as:
+
+```text
+wallet = wallet + amount
+```
+
+Under high concurrency, the current implementation could therefore create a **race condition**.
+
+For production, a PostgreSQL function should be created and called through **Supabase RPC** to perform wallet updates atomically.
+
+---
+
+### 3. OTP Purpose
+
+The OTP is used only for **waste pickup verification**.
+
+It is **not** used for login authentication.
+
+Users currently log in using:
+
+**Mobile Number + Password**
+
+Government users use:
+
+**Email + Password**
+
+---
+
+### 4. Geocoding and Route Optimization Limits
+
+The application currently uses:
+
+* **Nominatim** for geocoding and location search.
+* **OSRM** for road-based route calculation and optimization.
+
+Both provide public services that are useful for development and prototypes.
+
+However, public instances may enforce rate limits when a large number of requests are made.
+
+For a production deployment with significant traffic, consider:
+
+* Hosting your own OSRM instance.
+* Using a production-grade or paid geocoding API.
+* Implementing caching to reduce repeated API requests.
+* Adding request throttling and retry mechanisms.
+
+---
+
+# 🛠️ Technology Stack
+
+**Frontend / Application**
+
+* Streamlit
+* Python
+
+**Database & Storage**
+
+* Supabase
+* PostgreSQL
+* Supabase Storage
+* Row Level Security (RLS)
+
+**Maps & Location**
+
+* Folium
+* OpenStreetMap
+* Nominatim
+* Browser Geolocation
+
+**Route Optimization**
+
+* OSRM
+* Nearest-Neighbor Algorithm
+
+**Authentication**
+
+* Role-based login system
+* Mobile + Password for SHG and Driver
+* Email + Password for Government users
+
+**Waste Collection Verification**
+
+* 4-digit OTP
+
+**Payment / Wallet**
+
+* Automatic SHG wallet credit after successful pickup verification
+
+---
+
+## 🌐 Live Application
+
+**PWMS — Plastic Waste Management System**
+
+https://echobyte-nit-web-pwms.onrender.com
+
+## 💻 Source Code
+
+**GitHub Repository**
+
+https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git
