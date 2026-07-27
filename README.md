@@ -1,4 +1,4 @@
-# SentinelMRF — Streamlit + Supabase (Anon Key) Edition
+# EchoByte — Streamlit + Supabase (Anon Key) Edition
 
 The app now connects using the **Supabase Project URL + anon public key** — no database password, direct PostgreSQL connection, or `service_role` key is required.
 
