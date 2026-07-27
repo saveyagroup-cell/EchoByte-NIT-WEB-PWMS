@@ -1,107 +1,217 @@
-# EchoByte — Streamlit + Supabase (Anon Key) Edition
+# ♻️ EchoByte — Plastic Waste Management System (PWMS)
 
-The app now connects using the **Supabase Project URL + anon public key** — no database password, direct PostgreSQL connection, or `service_role` key is required.
+### Government of Chhattisgarh · Urban Administration & Development
 
-You only need to create the required tables once by running the provided `schema.sql` script. After that, the application is ready to run.
+> **Connecting SHGs, Drivers, and Government for Smarter Plastic Waste Management**
 
----
-
-## 🌐 Live Demo
-
-🚀 **PWMS (Plastic Waste Management System)**
-
-Explore the live website here:
-
-👉 https://echobyte-nit-web-pwms.onrender.com
+EchoByte is a digital **Plastic Waste Management System (PWMS)** designed to connect Self-Help Groups (SHGs), waste collection drivers, and government authorities on a single platform.
 
 ---
 
-## 💻 GitHub Repository
+# 1. 📖 Project Overview
 
-View the source code and contribute to the project:
+Plastic waste collection in rural and urban communities often faces challenges such as unstructured reporting, inefficient collection routes, lack of pickup verification, and limited visibility for government authorities.
 
-👉 https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git
+**EchoByte** provides a technology-driven platform to simplify and digitize this process.
+
+The system connects three major stakeholders:
+
+* 👩‍🌾 **Self-Help Groups (SHGs)** — Report plastic waste and receive payments.
+* 🚚 **Drivers** — Collect reported waste using optimized routes.
+* 🏛️ **Government Authorities** — Monitor collection activities and system performance.
+
+## 👩‍🌾 SHG Module
+
+SHG members can:
+
+* Sign up and log in using a mobile number and password
+* Upload an optional profile photo
+* Report available plastic waste
+* Enter waste quantity and description
+* Use the device's current GPS location
+* Search for locations manually
+* Generate a **4-digit pickup verification OTP**
+* Track submitted waste reports
+* Receive payment in their wallet after successful collection
+
+## 🚚 Driver Module
+
+Drivers can:
+
+* Sign up and log in using a mobile number and password
+* Register their vehicle number
+* View pending waste collection requests
+* View SHG details and waste quantity
+* Access pickup locations
+* Optimize collection routes
+* View routes on an interactive map
+* Verify collection using the SHG's OTP
+* Mark waste reports as collected
+
+The route optimization system uses actual latitude and longitude coordinates with a **Nearest-Neighbor approach and OSRM** for road-based routing.
+
+## 🏛️ Government Module
+
+Government authorities can access a centralized monitoring dashboard containing:
+
+* Key Performance Indicators (KPIs)
+* Plastic waste collection statistics
+* Daily collection trends
+* Village-wise collection analysis
+* SHG wallet distribution
+* Recent collection activities
+* Overall system monitoring
+
+## 💰 SHG Wallet System
+
+After successful OTP verification, the collected waste is confirmed and the SHG wallet is automatically credited.
+
+The current payout is:
+
+**₹2 per kg of collected plastic waste**
+
+## 🗺️ Location & Route Optimization
+
+EchoByte integrates:
+
+* Browser Geolocation
+* OpenStreetMap
+* Nominatim
+* Folium
+* OSRM
+* Nearest-Neighbor Route Optimization
+
+These technologies help identify collection points and generate efficient road-based collection routes for drivers.
+
+## 🛠️ Technology Stack
+
+| Category             | Technology                 |
+| -------------------- | -------------------------- |
+| Programming Language | Python                     |
+| Web Framework        | Streamlit                  |
+| Database             | PostgreSQL / Supabase      |
+| Backend Service      | Supabase                   |
+| Storage              | Supabase Storage           |
+| Maps                 | Folium / OpenStreetMap     |
+| Geocoding            | Nominatim                  |
+| Routing              | OSRM                       |
+| Route Optimization   | Nearest-Neighbor Algorithm |
+| Location             | Browser Geolocation        |
+| Authentication       | Role-Based Login           |
+| Pickup Verification  | 4-Digit OTP                |
+| Deployment           | Render                     |
 
 ---
 
-## Part 1 — Create a Supabase Project
+# 2. ⚙️ Installation Guide
 
-If you already have a Supabase project, you can skip this section.
+## Prerequisites
 
-1. Go to **Supabase** and sign up or log in.
-2. Click **"New Project"**.
-3. Set the project name, database password, and region.
-4. Click **"Create new project"**.
-5. Wait approximately 1–2 minutes for the project to be created.
+Before installing the project, make sure you have:
 
-> **Note:** The database password is only required during project setup. The application itself does not use it. We only need the **Project URL** and **anon public key**, which are explained in Part 3.
+* Python installed
+* Git installed
+* pip installed
+* A Supabase account
+* A Supabase project
 
----
+## Step 1 — Clone the Repository
 
-## Part 2 — Run the SQL Script
-
-The next step is to create the required database tables and Storage bucket.
-
-1. Open your Supabase project.
-2. From the left sidebar, go to **SQL Editor**.
-3. Click **"New query"**.
-4. Open the `schema.sql` file included in this repository.
-5. Copy its entire contents and paste them into the SQL Editor.
-6. Click **"Run"**.
-
-Running this script will automatically:
-
-* Create the `users` table.
-* Create the `garbage_reports` table.
-* Enable Row Level Security (RLS).
-* Give the `anon` role the required access so the application can work using only the anon key.
-* Create a public Supabase Storage bucket named `profile-photos`.
-* Configure the bucket for storing user profile photos.
-
-This setup only needs to be performed **once**.
-
----
-
-## Part 3 — Add the Project URL and Anon Key
-
-In the Supabase Dashboard, go to:
-
-**Project Settings (⚙️) → API**
-
-Copy the following two values:
-
-* **Project URL** — for example: `https://abcxyzprojectref.supabase.co`
-* **anon public key** — available under the Project API Keys section.
-
-> ⚠️ Do **not** use the `service_role` key. Use the `anon` / `public` key.
-
-There are two ways to configure these values.
-
-### Option A — Edit `supabase_client.py`
-
-This is the fastest method for local testing.
-
-```python
-SUPABASE_URL = _get_secret(
-    "SUPABASE_URL",
-    "https://YOUR-PROJECT-REF.supabase.co"
-)
-
-SUPABASE_ANON_KEY = _get_secret(
-    "SUPABASE_ANON_KEY",
-    "YOUR-ANON-PUBLIC-KEY"
-)
+```bash
+git clone https://github.com/saveyagroup-cell/EchoByte-Uniceff-WEB-PWMS.git
 ```
 
-Replace the placeholder values with your actual Supabase credentials.
+Navigate to the project directory:
 
-### Option B — Use Streamlit Secrets
+```bash
+cd EchoByte-Uniceff-WEB-PWMS
+```
 
-This method is recommended for deployment.
+## Step 2 — Create a Virtual Environment
 
-Create the following file inside your project:
+```bash
+python -m venv venv
+```
 
-`.streamlit/secrets.toml`
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+## Step 3 — Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## Step 4 — Configure Supabase
+
+Create a new project in Supabase.
+
+After creating the project:
+
+1. Open the **SQL Editor**
+2. Click **New Query**
+3. Open the `schema.sql` file from this repository
+4. Copy the complete SQL script
+5. Paste it into the Supabase SQL Editor
+6. Click **Run**
+
+The SQL script creates the required:
+
+* `users` table
+* `garbage_reports` table
+* Row Level Security policies
+* `profile-photos` Storage bucket
+
+The database setup only needs to be performed once.
+
+## Step 5 — Run the Application
+
+```bash
+streamlit run app.py
+```
+
+The application should now start on your local machine.
+
+---
+
+# 3. 🔐 Environment Variables
+
+EchoByte connects to Supabase using:
+
+* `SUPABASE_URL`
+* `SUPABASE_ANON_KEY`
+
+The application does **not** require a direct PostgreSQL connection or `service_role` key.
+
+## Get Supabase Credentials
+
+Open your Supabase project and navigate to the API settings.
+
+Copy your:
+
+```text
+Project URL
+Anon / Public Key
+```
+
+> ⚠️ Use the **anon/public key**, not the `service_role` key.
+
+## Option 1 — Streamlit Secrets
+
+Create:
+
+```text
+.streamlit/secrets.toml
+```
 
 Add:
 
@@ -110,344 +220,296 @@ SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co"
 SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY"
 ```
 
-The `supabase_client.py` file automatically checks for configuration values in the following order:
+Add the secrets file to `.gitignore`:
 
-1. Streamlit secrets
-2. Environment variables
-3. Hardcoded default values
-
-### Streamlit Community Cloud
-
-When deploying on Streamlit Community Cloud:
-
-Go to:
-
-**App Settings → Secrets**
-
-Then paste:
-
-```toml
-SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co"
-SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY"
+```gitignore
+.streamlit/secrets.toml
 ```
 
-> ⚠️ Do not push `.streamlit/secrets.toml` to a public GitHub repository. Add it to `.gitignore`.
+> ⚠️ Never commit credentials or secret configuration files to a public GitHub repository.
+
+## Option 2 — Environment Variables
+
+You can also configure:
+
+```text
+SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
+SUPABASE_ANON_KEY=YOUR-ANON-PUBLIC-KEY
+```
+
+The application automatically reads the Supabase configuration through `supabase_client.py`.
 
 ---
 
-## Part 4 — Install and Run
+# 4. 🚀 Deployment Instructions
 
-Install all required dependencies:
+The application can be deployed using **Render**.
+
+## Step 1 — Push the Project to GitHub
+
+Make sure the latest version of the application is available in the repository:
+
+```bash
+git add .
+git commit -m "Update EchoByte PWMS"
+git push origin main
+```
+
+## Step 2 — Create a Render Web Service
+
+1. Log in to Render
+2. Select **New Web Service**
+3. Connect your GitHub account
+4. Select:
+
+```text
+EchoByte-Uniceff-WEB-PWMS
+```
+
+## Step 3 — Build Command
+
+Configure the build command as:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the Streamlit application:
+## Step 4 — Start Command
+
+Configure the start command as:
 
 ```bash
-streamlit run app.py
+streamlit run app.py --server.port $PORT --server.address 0.0.0.0
 ```
 
-That's it.
+## Step 5 — Add Environment Variables
 
-There is no separate `init_db()` or migration step because all required tables were already created using the SQL script in Part 2.
+Inside the Render Environment settings, add:
+
+```text
+SUPABASE_URL = YOUR_SUPABASE_PROJECT_URL
+SUPABASE_ANON_KEY = YOUR_SUPABASE_ANON_KEY
+```
+
+## Step 6 — Deploy
+
+Click **Deploy**.
+
+Render will install the dependencies and start the Streamlit application.
 
 ---
 
-# 👥 User Roles
+# 5. 👥 Team Members
 
-The system supports three primary roles:
+| Team Member       | Role      | Responsibility                   |
+| ----------------- | --------- | -------------------------------- |
+| **[Nomend Kumar Sahu]** | Team Lead | Project Management & Development |
+| **[Yogesh Kumar Yadav]** | Developer | Backend & Supabase Integration   |
+| **[Harsha Sahu]** | Developer | Frontend & UI/UX                 |
+| **[Dagendra Kumar Sahu]** | Developer | Maps & Route Optimization        |
+| **[Jayant Verma]** | Developer | Maps & Route Optimization        |
 
-## 👩‍🌾 SHG — Self-Help Group
 
-SHG users can sign up and log in using their **mobile number and password**.
+---
 
-The garbage reporting form provides a **"Use my current location"** option.
+# 6. 📸 System Screenshots
 
-Similar to applications such as Blinkit or Zomato, the browser requests GPS/location permission from the user.
+The following section demonstrates the major modules and interfaces of the EchoByte platform.
 
-Alternatively, users can manually search for their location using **OpenStreetMap Nominatim**, which is available as a free geocoding service.
+## 🏠 Main Page
 
-An SHG user can submit:
+**Government of Chhattisgarh · Urban Administration & Development**
+<img width="358" height="284" alt="Echobyte Repository" src="https://github.com/user-attachments/assets/04be4eb8-e5fc-4fad-be18-1c8a3188bbca" />
 
-* Location
-* Plastic waste quantity
+### EchoByte
+
+**Connecting SHGs, Drivers, and Government for Smarter Plastic Waste Management**
+
+```text
+Add Main Page Screenshot Here
+```
+
+---
+
+## 🔐 Login & Registration
+
+Users can select their role and either log in to an existing account or create a new account.
+
+```text
+Add Login / Signup Screenshot Here
+```
+
+---
+
+## 👩‍🌾 SHG Dashboard
+
+The SHG Dashboard allows users to report plastic waste, manage reports, check pickup status, and monitor their wallet.
+
+```text
+Add SHG Dashboard Screenshot Here
+```
+
+---
+
+## 🗑️ Garbage Reporting System
+
+SHG members can submit:
+
+* Waste quantity
 * Description
-* Other report information
+* Village
+* Collection location
+* GPS coordinates
 
-After submitting the report, the system automatically generates a **4-digit OTP**.
-
-The SHG member provides this OTP to the driver during waste pickup to verify the collection.
+```text
+Add Garbage Reporting Screenshot Here
+```
 
 ---
 
-## 🚚 Driver
+## 📍 Current Location Detection
 
-Drivers log in using their **mobile number and password**.
+Users can select **"Use My Current Location"** and allow browser location permission to automatically identify the collection location.
 
-The Driver Dashboard includes an:
+```text
+Add Location Screenshot Here
+```
 
-**"Optimize Route (OSRM)"** button.
+---
 
-When clicked, the system:
+## 🔢 Pickup OTP
 
-1. Retrieves pending garbage reports.
-2. Uses their actual latitude and longitude coordinates.
-3. Applies a **Nearest-Neighbor route optimization approach**.
-4. Uses OSRM to calculate the actual road route.
-5. Displays the optimized route on an interactive **Folium map**.
+A 4-digit OTP is generated when a waste report is successfully submitted.
 
-Each collection stop displays important SHG information, including:
+The SHG member provides this OTP to the driver during collection.
+
+```text
+Add OTP Screenshot Here
+```
+
+---
+
+## 🚚 Driver Dashboard
+
+Drivers can view pending waste collection requests along with:
 
 * SHG name
 * Mobile number
 * Location
 * Waste quantity
-* Collection information
-
-During pickup, the driver enters the OTP provided by the SHG member.
-
-Once the OTP is successfully verified:
-
-* The report is marked as collected.
-* The collection is confirmed.
-* The SHG wallet is automatically credited.
-
-The current payout rate is:
-
-**₹2 per kg**
-
-This can be modified using the `payout` logic inside `app.py`.
-
----
-
-## 🏛️ Government
-
-Government users log in using their **email and password**.
-
-The Government Dashboard provides monitoring and analytics features such as:
-
-* Key Performance Indicators (KPIs)
-* Daily collection trend charts
-* Village-wise collection bar charts
-* SHG wallet distribution table
-* Recent activity log
-
-This allows government authorities to monitor plastic waste collection activities and overall system performance.
-
----
-
-# 📸 Profile Photos
-
-All three roles support an optional **profile photo upload** during signup.
-
-The actual image is uploaded to the Supabase Storage bucket:
-
-`profile-photos`
-
-Only the image URL is stored in the database table.
-
-Driver registration also contains an additional:
-
-**Vehicle Number**
-
-field.
-
----
-
-# 🗄️ Database Schema
-
-The actual database setup is available in `schema.sql`.
-
-For reference, the main tables are:
-
-```sql
-create table users (
-  id serial primary key,
-  role text not null check (role in ('shg','driver','govt')),
-  full_name text not null,
-  mobile text unique,
-  village text,
-  email text unique,
-  password_hash text not null,
-  wallet numeric(10,2) default 0,
-  photo_url text,
-  vehicle_no text,
-  created_at timestamptz default now()
-);
-
-create table garbage_reports (
-  id serial primary key,
-  shg_id integer not null references users(id) on delete cascade,
-  village text,
-  location_name text,
-  lat double precision,
-  lng double precision,
-  quantity_kg numeric(10,2) not null,
-  description text,
-  status text default 'pending'
-    check (status in ('pending','assigned','collected')),
-  otp text,
-  created_at timestamptz default now(),
-  collected_at timestamptz
-);
-```
-
----
-
-# ⚠️ Security Note
-
-Please read this section carefully.
-
-The `schema.sql` file configures Row Level Security policies for both tables that currently allow the `anon` role **full read/write access** using policies equivalent to:
-
-```sql
-using (true)
-```
-
-This approach is used because the application operates entirely with the Supabase anon key and does not use a `service_role` key or server-side authenticated database session.
-
-This means that anyone who obtains your **Project URL + anon key** may potentially interact directly with the Supabase REST API and read or modify accessible data.
-
-For an internal Chhattisgarh government pilot or demonstration project, this architecture may provide a simple development setup.
-
-However, for a public-facing or production application, stronger security controls should be implemented.
-
-Recommended improvements include:
-
-* Add row-level ownership checks to RLS policies so SHG users can only access or modify their own data.
-* Implement proper Supabase Authentication and user-based RLS policies.
-* Alternatively, use a secure server-side backend with the `service_role` key stored only on the server.
-* Never expose the `service_role` key in frontend code or a public repository.
-
----
-
-# 🚀 Recommended Production Improvements
-
-### 1. Stronger Password Hashing
-
-Passwords are currently hashed using plain `SHA-256`.
-
-This may be acceptable for a prototype or demonstration, but it should not be used as a production password-storage mechanism.
-
-For production, use a password hashing algorithm such as:
-
-* `bcrypt`
-* `Argon2`
-
----
-
-### 2. Atomic Wallet Transactions
-
-The current wallet credit process follows this pattern:
+* Collection status
 
 ```text
-Fetch current wallet balance
-        ↓
-Calculate new balance
-        ↓
-Update wallet
+Add Driver Dashboard Screenshot Here
 ```
 
-PostgREST's standard query builder does not directly provide an atomic operation such as:
+---
+
+## 🗺️ Optimized Collection Route
+
+The system uses location coordinates and OSRM to display an optimized road-based collection route.
 
 ```text
-wallet = wallet + amount
+Add Route Optimization Screenshot Here
 ```
 
-Under high concurrency, the current implementation could therefore create a **race condition**.
+---
 
-For production, a PostgreSQL function should be created and called through **Supabase RPC** to perform wallet updates atomically.
+## ✅ Pickup Verification
+
+The driver enters the OTP provided by the SHG.
+
+After successful verification:
+
+```text
+OTP Verified
+      ↓
+Waste Collected
+      ↓
+Report Updated
+      ↓
+SHG Wallet Credited
+```
+
+```text
+Add Pickup Verification Screenshot Here
+```
 
 ---
 
-### 3. OTP Purpose
+## 🏛️ Government Dashboard
 
-The OTP is used only for **waste pickup verification**.
+Government authorities can monitor the plastic waste management ecosystem through analytics and reports.
 
-It is **not** used for login authentication.
+The dashboard includes:
 
-Users currently log in using:
+* KPIs
+* Collection statistics
+* Daily trends
+* Village-wise analysis
+* Wallet distribution
+* Recent activities
 
-**Mobile Number + Password**
-
-Government users use:
-
-**Email + Password**
-
----
-
-### 4. Geocoding and Route Optimization Limits
-
-The application currently uses:
-
-* **Nominatim** for geocoding and location search.
-* **OSRM** for road-based route calculation and optimization.
-
-Both provide public services that are useful for development and prototypes.
-
-However, public instances may enforce rate limits when a large number of requests are made.
-
-For a production deployment with significant traffic, consider:
-
-* Hosting your own OSRM instance.
-* Using a production-grade or paid geocoding API.
-* Implementing caching to reduce repeated API requests.
-* Adding request throttling and retry mechanisms.
+```text
+Add Government Dashboard Screenshot Here
+```
 
 ---
 
-# 🛠️ Technology Stack
+# 7. 🌐 Live Demo
 
-**Frontend / Application**
+Experience the deployed **EchoByte — Plastic Waste Management System (PWMS)**:
 
-* Streamlit
-* Python
-
-**Database & Storage**
-
-* Supabase
-* PostgreSQL
-* Supabase Storage
-* Row Level Security (RLS)
-
-**Maps & Location**
-
-* Folium
-* OpenStreetMap
-* Nominatim
-* Browser Geolocation
-
-**Route Optimization**
-
-* OSRM
-* Nearest-Neighbor Algorithm
-
-**Authentication**
-
-* Role-based login system
-* Mobile + Password for SHG and Driver
-* Email + Password for Government users
-
-**Waste Collection Verification**
-
-* 4-digit OTP
-
-**Payment / Wallet**
-
-* Automatic SHG wallet credit after successful pickup verification
-
----
-
-## 🌐 Live Application
-
-**PWMS — Plastic Waste Management System**
+### 🚀 Live Application
 
 https://echobyte-nit-web-pwms.onrender.com
 
-## 💻 Source Code
+### 💻 GitHub Repository
 
-**GitHub Repository**
+https://github.com/saveyagroup-cell/EchoByte-Uniceff-WEB-PWMS
 
-https://github.com/saveyagroup-cell/EchoByte-NIT-WEB-PWMS.git
+---
+
+# 🔒 Security Note
+
+The current version is designed primarily as a pilot/prototype.
+
+The Supabase configuration uses an anon key with RLS policies that provide the application with the required database access.
+
+For a production deployment, recommended improvements include:
+
+* Supabase Authentication
+* User-specific Row Level Security policies
+* `bcrypt` or `Argon2` password hashing
+* Secure server-side authentication
+* Atomic PostgreSQL RPC functions for wallet transactions
+* Rate limiting
+* Production-grade geocoding services
+* Self-hosted or production routing infrastructure
+
+Never expose a Supabase `service_role` key in frontend code or a public repository.
+
+---
+
+# 🔮 Future Scope
+
+Future versions of EchoByte can include:
+
+* 🤖 AI-based plastic waste classification
+* 📷 Image-based waste verification
+* 🚛 Advanced multi-vehicle route optimization
+* 📱 Dedicated Android/iOS application
+* 📊 Advanced government analytics
+* 🔔 Real-time pickup notifications
+* 💳 Digital payment integration
+* 🛰️ GIS-based waste hotspot monitoring
+* 📈 Predictive waste generation analytics
+* 🏆 SHG reward and incentive system
+
+---
+
+# ♻️ EchoByte
+
+### Connecting Communities. Optimizing Collection. Building a Cleaner Chhattisgarh.
+
+**Chhattisgarh · EchoByte Pilot**
