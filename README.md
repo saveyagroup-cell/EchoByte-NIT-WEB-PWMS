@@ -319,16 +319,14 @@ The following section demonstrates the major modules and interfaces of the EchoB
 ## 🏠 Main Page
 
 **Government of Chhattisgarh · Urban Administration & Development**
-<img width="1315" height="595" alt="image" src="https://github.com/user-attachments/assets/98f3488d-24fb-48f3-b99a-92ab424ac590" />
 
 
 ### EchoByte
 
 **Connecting SHGs, Drivers, and Government for Smarter Plastic Waste Management**
 
-```text
-Add Main Page Screenshot Here
-```
+<img width="1315" height="595" alt="image" src="https://github.com/user-attachments/assets/98f3488d-24fb-48f3-b99a-92ab424ac590" />
+
 
 ---
 
@@ -336,9 +334,8 @@ Add Main Page Screenshot Here
 
 Users can select their role and either log in to an existing account or create a new account.
 
-```text
-Add Login / Signup Screenshot Here
-```
+<img width="754" height="581" alt="Screenshot 2026-07-27 113501" src="https://github.com/user-attachments/assets/c15f1248-093b-4055-815d-dcee0d6ff62c" />
+
 
 ---
 
@@ -346,9 +343,8 @@ Add Login / Signup Screenshot Here
 
 The SHG Dashboard allows users to report plastic waste, manage reports, check pickup status, and monitor their wallet.
 
-```text
-Add SHG Dashboard Screenshot Here
-```
+<img width="1343" height="632" alt="Screenshot 2026-07-27 113639" src="https://github.com/user-attachments/assets/5b6452d8-d7b8-4fa7-ba23-f2293a60d588" />
+
 
 ---
 
@@ -362,9 +358,8 @@ SHG members can submit:
 * Collection location
 * GPS coordinates
 
-```text
-Add Garbage Reporting Screenshot Here
-```
+<img width="1129" height="553" alt="image" src="https://github.com/user-attachments/assets/81ffd101-a233-439c-ac74-2141ff94ee7d" />
+
 
 ---
 
@@ -372,9 +367,8 @@ Add Garbage Reporting Screenshot Here
 
 Users can select **"Use My Current Location"** and allow browser location permission to automatically identify the collection location.
 
-```text
-Add Location Screenshot Here
-```
+<img width="824" height="518" alt="Screenshot 2026-07-27 113919" src="https://github.com/user-attachments/assets/5138852b-f422-4e07-afaa-7f92e77a7d47" />
+
 
 ---
 
@@ -384,9 +378,8 @@ A 4-digit OTP is generated when a waste report is successfully submitted.
 
 The SHG member provides this OTP to the driver during collection.
 
-```text
-Add OTP Screenshot Here
-```
+<img width="1121" height="492" alt="Screenshot 2026-07-27 114203" src="https://github.com/user-attachments/assets/511ade15-6ca0-4e3c-8900-f570b26e2bcf" />
+
 
 ---
 
@@ -400,9 +393,8 @@ Drivers can view pending waste collection requests along with:
 * Waste quantity
 * Collection status
 
-```text
-Add Driver Dashboard Screenshot Here
-```
+<img width="1310" height="638" alt="Screenshot 2026-07-27 114043" src="https://github.com/user-attachments/assets/b86a5d97-57bc-464c-a441-dcce364453af" />
+
 
 ---
 
@@ -410,9 +402,8 @@ Add Driver Dashboard Screenshot Here
 
 The system uses location coordinates and OSRM to display an optimized road-based collection route.
 
-```text
-Add Route Optimization Screenshot Here
-```
+<img width="1100" height="442" alt="image" src="https://github.com/user-attachments/assets/e88ad1f3-6675-4e7b-bf9e-c80569d22135" />
+
 
 ---
 
@@ -432,9 +423,8 @@ Report Updated
 SHG Wallet Credited
 ```
 
-```text
-Add Pickup Verification Screenshot Here
-```
+<img width="1121" height="492" alt="Screenshot 2026-07-27 114203" src="https://github.com/user-attachments/assets/dda7b383-328c-4947-9f38-c510b1d0ed16" />
+
 
 ---
 
@@ -451,9 +441,8 @@ The dashboard includes:
 * Wallet distribution
 * Recent activities
 
-```text
-Add Government Dashboard Screenshot Here
-```
+<img width="1310" height="600" alt="Screenshot 2026-07-27 114311" src="https://github.com/user-attachments/assets/a44128c6-f557-4a46-a6c5-d4cc3b2a0353" />
+
 
 ---
 
