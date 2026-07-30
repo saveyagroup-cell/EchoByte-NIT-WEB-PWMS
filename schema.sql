@@ -1,7 +1,15 @@
 -- ============================================================
--- SentinelMRF — Supabase SQL Setup
--- Ise Supabase Dashboard -> SQL Editor mein paste karke "Run" karein.
--- Ek hi baar chalana hai (project setup ke waqt).
+-- EchoByte — Supabase SQL Setup
+--
+-- HOW TO USE (brand-new project):
+--   1. Open your Supabase project → SQL Editor.
+--   2. Paste this entire file and click "Run".
+--   3. Done — all tables, seed data, security policies, and storage
+--      buckets are created in one go. No other setup step is needed.
+--
+-- Safe to re-run: every statement uses "if not exists" / "on conflict
+-- do nothing", so running this file again later won't delete or
+-- duplicate anything.
 -- ============================================================
 
 -- ===== Tables =====
@@ -22,6 +30,7 @@ create table if not exists users (
   location_updated_at timestamptz,
   service_radius_km numeric(5,2) default 3,
   pwm_unit_id integer,
+  training_video_completed boolean default false,
   created_at timestamptz default now()
 );
 
@@ -42,9 +51,9 @@ create table if not exists garbage_reports (
   collected_at timestamptz
 );
 
--- Govt-controlled rate card: har plastic type ke liye SHG aur Driver ko
--- kitna ₹/kg milega, yeh govt yahan se set karti hai. Collection verify
--- hone par isi table se dono ke wallet calculate hote hain.
+-- Govt-controlled rate card: how much ₹/kg the SHG and Driver each earn
+-- per plastic type. Wallets are calculated from this table once a
+-- collection is verified.
 create table if not exists plastic_rates (
   type text primary key,
   shg_rate_per_kg numeric(10,2) not null default 2,
@@ -130,18 +139,17 @@ where not exists (select 1 from pwm_units where name = 'Raipur PWM Unit');
 -- ============================================================
 -- Row Level Security
 --
--- Yeh app poora Streamlit (server-side) se chalta hai aur sirf anon public
--- key use karta hai (koi service_role/password nahi) — isliye anon role ko
--- in tables par pura read/write access de rahe hain.
+-- This app runs entirely from Streamlit (server-side) and only uses the
+-- anon public key (no service_role/password) — so we grant the anon
+-- role full read/write access on these tables.
 --
--- ⚠️ IMPORTANT: Iska matlab hai ki jo bhi tumhari Project URL + anon key
--- jaanta hai, woh Supabase REST API se seedha yeh data padh/likh sakta hai
--- (anon key already public/client-safe maani jaati hai, lekin yahan hum
--- usse full table access de rahe hain, jo normally client-side apps mein
--- nahi karte). Ek internal government pilot tool ke liye yeh acceptable
--- hai, lekin agar aage chalke isse public-facing banana ho, to RLS ko
--- tighten karna (row-level ownership checks add karna, ya service_role +
--- apna khud ka server-side auth layer use karna).
+-- ⚠️ IMPORTANT: This means anyone who knows your Project URL + anon key
+-- can read/write this data directly via the Supabase REST API (the anon
+-- key is normally considered public/client-safe, but here we're giving
+-- it full table access, which typical client-side apps don't do). This
+-- is acceptable for an internal government pilot tool, but if this ever
+-- becomes public-facing, tighten RLS (add row-level ownership checks, or
+-- use service_role + your own server-side auth layer).
 -- ============================================================
 
 alter table users enable row level security;
@@ -202,7 +210,10 @@ create policy "anon full access pwm_units" on pwm_units
   with check (true);
 
 -- ============================================================
--- Storage bucket — profile photos
+-- Storage buckets — profile photos + pickup-proof photos
+-- (The SHG training video is NOT stored here — it's hosted on Google
+-- Drive and linked via a constant in supabase_client.py, so no storage
+-- bucket or table is needed for it.)
 -- ============================================================
 
 insert into storage.buckets (id, name, public)
@@ -239,16 +250,22 @@ create policy "anon can read pickup photos"
   using (bucket_id = 'pickup-photos');
 
 -- ============================================================
--- Done! Ab app.py chalao — SUPABASE_URL aur SUPABASE_ANON_KEY sahi
--- daalne ke baad seedha kaam karega, koi aur SQL/setup step nahi chahiye.
+-- Done! For a brand-new project, this single run is all you need.
+-- Next steps:
+--   1. Set SUPABASE_URL and SUPABASE_ANON_KEY in supabase_client.py
+--      (Project Settings → API in your Supabase dashboard).
+--   2. Set TRAINING_VIDEO_DRIVE_URL in supabase_client.py to your
+--      Google Drive share link for the SHG training video.
+--   3. Run: streamlit run app.py
 --
--- NOTE: Agar tumhara Supabase project PEHLE se bana hua hai (purana data
--- already hai), to yeh poora file dobara "Run" karna safe hai — sab
--- "if not exists" / "on conflict do nothing" hai, kuch delete nahi hoga.
--- Bas ek cheez manually check kar lena: agar garbage_reports/users table
--- pehle se hai to naye columns apne aap add nahi honge ("create table
--- if not exists" purane table ko touch nahi karta). Us case mein neeche
--- wali lines alag se Supabase SQL editor mein chala dena:
+-- ------------------------------------------------------------
+-- MIGRATION NOTES (only relevant for an EXISTING/older Supabase project
+-- that already had these tables before this version of the schema —
+-- a brand-new project can ignore everything below this line):
+--
+-- "create table if not exists" does NOT add new columns to a table
+-- that already exists. If your users/garbage_reports/withdrawals tables
+-- were created by an older version of this file, run these separately:
 --
 --   alter table garbage_reports add column if not exists
 --     plastic_type text default 'Mixed Plastic';
@@ -268,14 +285,16 @@ create policy "anon can read pickup photos"
 --
 --   alter table users add column if not exists pwm_unit_id integer;
 --
--- (disputes / sos_alerts / pwm_units khud "create table if not exists" hain,
--- unke liye alag se kuch nahi chalana — bas poora file dobara Run kar dena,
--- isse "Bhilai PWM Unit" aur "Raipur PWM Unit" bhi seed ho jaayenge agar
--- pehle se nahi hain.)
+--   alter table users add column if not exists training_video_completed boolean default false;
 --
--- service_radius_km = Zomato/Blinkit-style "delivery zone" — har driver ka
--- apna radius (km) hota hai; sirf usi radius ke andar wale pending reports
--- uski "Optimize Route" batch mein consider hote hain (dekho app.py mein
--- select_batch_for_driver). NULL/0 rehne par app khud fallback default
--- (3km) use kar leta hai, isliye yeh migration purane rows ke liye bhi safe hai.
+-- (disputes / sos_alerts / pwm_units already use "create table if not
+-- exists", so nothing extra is needed for them — just re-running this
+-- whole file will also seed "Bhilai PWM Unit" and "Raipur PWM Unit" if
+-- they aren't already there.)
+--
+-- service_radius_km = a Zomato/Blinkit-style "delivery zone" — each
+-- driver has their own radius (km); only pending reports within that
+-- radius are considered in their "Optimize Route" batch (see
+-- select_batch_for_driver in app.py). NULL/0 falls back to the app's
+-- default (3km), so this migration is safe for old rows too.
 -- ============================================================
