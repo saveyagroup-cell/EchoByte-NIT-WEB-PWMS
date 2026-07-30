@@ -1,10 +1,10 @@
 """
 EchoByte — Connecting SHGs, Drivers, and Governments for Smarter Plastic Waste Management
-Streamlit + Supabase (Postgres via supabase-py, anon key) version
+Streamlit + AWS (RDS Postgres + S3) version
 
 Before running:
-    1. Run schema.sql in the Supabase SQL Editor (one time only)
-    2. Add SUPABASE_URL and SUPABASE_ANON_KEY in supabase_client.py
+    1. Run schema.sql on your RDS Postgres instance (one time only)
+    2. Set DB_HOST/DB_NAME/DB_USER/DB_PASSWORD/S3_BUCKET in db_client.py (or Streamlit secrets / env vars)
     3. pip install -r requirements.txt
     4. streamlit run app.py
 
@@ -13,7 +13,7 @@ The full setup guide is in README.md.
 import streamlit as st
 
 # set_page_config() MUST be the very first Streamlit command — that's why
-# this is here, before any other import (especially supabase_client, which
+# this is here, before any other import (especially db_client, which
 # touches st.secrets). Do not move this below or after another import,
 # otherwise you'll get a "set_page_config() can only be called once..." error.
 st.set_page_config(page_title="EchoByte", page_icon="🗑️", layout="wide")
@@ -24,6 +24,7 @@ import random
 import math
 import os
 import base64
+import re
 import requests
 import warnings
 from datetime import datetime
@@ -41,7 +42,8 @@ import matplotlib.pyplot as plt
 
 import httpx
 
-from supabase_client import get_client, upload_photo, PICKUP_BUCKET_NAME
+import streamlit.components.v1 as components
+from supabase_client import get_client, upload_photo, PICKUP_BUCKET_NAME, get_training_video_url
 
 # ============================================================
 # Setup
@@ -154,6 +156,12 @@ TRANSLATIONS = {
         "withdraw_details": "Account details", "submit_withdraw": "Request Withdrawal",
         "withdraw_success": "Withdrawal request submitted!", "insufficient_balance": "Amount exceeds wallet balance.",
         "withdraw_history": "Withdrawal History", "no_withdrawals": "No withdrawals yet.",
+        "training_gate_title": "📹 Training Video (Required)",
+        "training_gate_msg": "Please watch the training video first. Once you confirm below, you'll be able to submit your collection reports.",
+        "training_gate_no_video": "Training video is not set up yet. Please contact the admin.",
+        "training_gate_done": "✅ Training completed! You can now submit reports below.",
+        "training_gate_confirm_checkbox": "I have watched the complete training video",
+        "training_gate_confirm_btn": "✅ Mark Training as Complete",
         "report_garbage": "Report Garbage", "quantity_kg": "Quantity (kg)", "plastic_type": "Plastic Type",
         "description": "Description", "submit_report": "Submit Report", "your_reports": "Your Reports",
         "driver_dashboard": "Driver Dashboard", "my_profile": "My Profile", "active_stops": "Active Stops",
@@ -188,6 +196,12 @@ TRANSLATIONS = {
         "withdraw_details": "खाता विवरण", "submit_withdraw": "निकासी का अनुरोध करें",
         "withdraw_success": "निकासी का अनुरोध भेज दिया गया!", "insufficient_balance": "राशि वॉलेट बैलेंस से ज्यादा है।",
         "withdraw_history": "निकासी इतिहास", "no_withdrawals": "अभी तक कोई निकासी नहीं हुई।",
+        "training_gate_title": "📹 प्रशिक्षण वीडियो (आवश्यक)",
+        "training_gate_msg": "कृपया पहले प्रशिक्षण वीडियो देखें। नीचे कन्फर्म करते ही आप अपनी रिपोर्ट भेज सकेंगी।",
+        "training_gate_no_video": "प्रशिक्षण वीडियो अभी सेट नहीं हुआ है। कृपया एडमिन से संपर्क करें।",
+        "training_gate_done": "✅ प्रशिक्षण पूरा हुआ! अब आप नीचे रिपोर्ट भेज सकती हैं।",
+        "training_gate_confirm_checkbox": "मैंने पूरा प्रशिक्षण वीडियो देख लिया है",
+        "training_gate_confirm_btn": "✅ प्रशिक्षण पूर्ण के रूप में चिह्नित करें",
         "report_garbage": "कचरा रिपोर्ट करें", "quantity_kg": "मात्रा (किग्रा)", "plastic_type": "प्लास्टिक का प्रकार",
         "description": "विवरण", "submit_report": "रिपोर्ट भेजें", "your_reports": "आपकी रिपोर्ट्स",
         "driver_dashboard": "चालक डैशबोर्ड", "my_profile": "मेरी प्रोफ़ाइल", "active_stops": "सक्रिय स्टॉप",
@@ -222,6 +236,12 @@ TRANSLATIONS = {
         "withdraw_details": "खाता के जानकारी", "submit_withdraw": "निकासी बर आवेदन करव",
         "withdraw_success": "निकासी के आवेदन भेज दे गे हे!", "insufficient_balance": "राशि वॉलेट ले जादा हे।",
         "withdraw_history": "निकासी के इतिहास", "no_withdrawals": "अभी तक कोई निकासी नई होय हे।",
+        "training_gate_title": "📹 प्रशिक्षण वीडियो (जरूरी हे)",
+        "training_gate_msg": "पहिली प्रशिक्षण वीडियो देखव। नीचे कन्फर्म करते ही तुंहर रिपोर्ट भेज सकबे।",
+        "training_gate_no_video": "प्रशिक्षण वीडियो अभी सेट नई होय हे। एडमिन ले संपर्क करव।",
+        "training_gate_done": "✅ प्रशिक्षण पूरा होगे! अब तुंहर रिपोर्ट नीचे भेज सकत हव।",
+        "training_gate_confirm_checkbox": "मैं पूरा प्रशिक्षण वीडियो देख डारे हंव",
+        "training_gate_confirm_btn": "✅ प्रशिक्षण पूर्ण मार्क करव",
         "report_garbage": "कचरा के रिपोर्ट करव", "quantity_kg": "मात्रा (किग्रा)", "plastic_type": "प्लास्टिक के किसम",
         "description": "विवरण", "submit_report": "रिपोर्ट भेजव", "your_reports": "तुंहर रिपोर्ट",
         "driver_dashboard": "ड्राइवर डैशबोर्ड", "my_profile": "मोर प्रोफाइल", "active_stops": "चालू स्टॉप",
@@ -763,6 +783,68 @@ def render_auth():
 
 
 # ============================================================
+# SHG TRAINING VIDEO GATE — SHG apna data (garbage report) tabhi submit
+# kar payegi jab wo yeh video dekh legi. Video Google Drive pe hai (link
+# supabase_client.py ke TRAINING_VIDEO_DRIVE_URL constant me daala hai —
+# jab bhi video badalni ho bas wo ek line edit kar dena, koi SQL/DB
+# change nahi chahiye).
+#
+# NOTE: Drive ka video ek iframe me dikhta hai (Google ke apne player
+# se), isliye humara app "video pura khatam hui ya nahi" khud check
+# NAHI kar sakta (cross-origin restriction — koi bhi website doosri
+# website ke andar chal rahe video ko JS se control nahi kar sakti).
+# Isliye yahan HONOR-SYSTEM hai: SHG khud checkbox tick karke confirm
+# karti hai ki usne video dekh li, phir "Training Complete" button se
+# aage badhti hai. Agar future me strict auto-detect chahiye (bina
+# checkbox ke, video khatam hote hi automatic unlock), video ko kisi
+# direct-file host (Supabase Storage / Cloudflare R2 / S3) pe daalna
+# hoga — Drive ke saath ye possible nahi hai.
+#
+# Returns True agar training complete ho chuki hai (form dikhana hai),
+# False agar abhi video hi dikhana hai (form chhupana hai).
+# ============================================================
+def _to_drive_embed_url(url: str) -> str:
+    """Google Drive ka normal 'share' link (.../file/d/FILE_ID/view) ko
+    embeddable '/preview' link me convert karta hai. Agar link already
+    kisi aur format ka hai (ya Drive ka hi nahi hai), usko waisa hi
+    wapas kar deta hai."""
+    m = re.search(r"drive\.google\.com/file/d/([a-zA-Z0-9_-]+)", url)
+    if m:
+        return f"https://drive.google.com/file/d/{m.group(1)}/preview"
+    return url
+
+
+def render_shg_training_gate(user) -> bool:
+    if user.get("training_video_completed"):
+        return True
+
+    video_url = get_training_video_url()
+    st.markdown(f'<div class="ledger-card"><div class="eyebrow">{T("training_gate_title")}</div>', unsafe_allow_html=True)
+    st.info(T("training_gate_msg"))
+
+    if not video_url:
+        st.warning(T("training_gate_no_video"))
+    else:
+        embed_url = _to_drive_embed_url(video_url)
+        components.html(f"""
+            <iframe src="{embed_url}" width="100%" height="420"
+                    allow="autoplay" style="border-radius:12px;border:none;"
+                    allowfullscreen></iframe>
+        """, height=430)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    confirmed = st.checkbox(T("training_gate_confirm_checkbox"), key="training_confirm_checkbox")
+    if st.button(T("training_gate_confirm_btn"), disabled=not confirmed, use_container_width=True):
+        sb.table("users").update({"training_video_completed": True}).eq("id", user["id"]).execute()
+        st.session_state.user["training_video_completed"] = True
+        st.success(T("training_gate_done"))
+        st.rerun()
+
+    return False
+
+
+# ============================================================
 # WALLET WITHDRAW — shared by SHG and Driver dashboards
 # ============================================================
 def render_wallet_withdraw(user):
@@ -911,103 +993,104 @@ def render_shg(user):
     # ---- Withdraw ----
     render_wallet_withdraw(user)
 
-    # ---- Report garbage form ----
-    st.markdown(f'<div class="ledger-card"><div class="eyebrow">{T("report_garbage")}</div>', unsafe_allow_html=True)
+    if render_shg_training_gate(user):
+        # ---- Report garbage form ----
+        st.markdown(f'<div class="ledger-card"><div class="eyebrow">{T("report_garbage")}</div>', unsafe_allow_html=True)
 
-    st.markdown("**📍 Use my current location** — this will ask for browser permission.")
-    gps = streamlit_geolocation()
-    if gps and gps.get("latitude"):
-        coords = (gps["latitude"], gps["longitude"])
-        # There's no auto st.rerun() here — the GPS component can give a
-        # slightly different reading on every rerun, which used to cause a
-        # loop. Now it only confirms when the user explicitly clicks
-        # "Use this location".
-        if st.session_state.last_gps != coords:
-            st.session_state.last_gps = coords
-            with st.spinner("Fetching your location..."):
-                st.session_state.pending_gps_name = reverse_geocode(*coords)
+        st.markdown("**📍 Use my current location** — this will ask for browser permission.")
+        gps = streamlit_geolocation()
+        if gps and gps.get("latitude"):
+            coords = (gps["latitude"], gps["longitude"])
+            # There's no auto st.rerun() here — the GPS component can give a
+            # slightly different reading on every rerun, which used to cause a
+            # loop. Now it only confirms when the user explicitly clicks
+            # "Use this location".
+            if st.session_state.last_gps != coords:
+                st.session_state.last_gps = coords
+                with st.spinner("Fetching your location..."):
+                    st.session_state.pending_gps_name = reverse_geocode(*coords)
 
-        if st.session_state.get("pending_gps_name"):
-            st.info(f"📍 GPS location found: **{st.session_state.pending_gps_name}**")
-            if st.button("✅ Use this location"):
-                st.session_state.selected_location = {
-                    "lat": coords[0], "lng": coords[1], "name": st.session_state.pending_gps_name
-                }
-                st.session_state.loc_candidates = []
-                st.session_state.pending_gps_name = None
-
-    with st.expander("Or search for a location manually"):
-        search_col, btn_col = st.columns([4, 1])
-        query = search_col.text_input("Exact Pickup Location", placeholder="e.g. Raipura Chowk", label_visibility="visible")
-        if btn_col.button("🔍 Search", use_container_width=True):
-            if len(query.strip()) < 3:
-                st.warning("Please enter at least 3 letters.")
-            else:
-                with st.spinner("Searching for location..."):
-                    results, err = geocode_location(query.strip(), user["village"])
-                st.session_state.selected_location = None
-                if err:
+            if st.session_state.get("pending_gps_name"):
+                st.info(f"📍 GPS location found: **{st.session_state.pending_gps_name}**")
+                if st.button("✅ Use this location"):
+                    st.session_state.selected_location = {
+                        "lat": coords[0], "lng": coords[1], "name": st.session_state.pending_gps_name
+                    }
                     st.session_state.loc_candidates = []
-                    st.error(f"Search failed: {err}. Please check your internet connection and try again.")
-                elif not results:
-                    st.session_state.loc_candidates = []
-                    st.warning("No location found. Try a slightly different or more specific name (e.g. just the village name).")
+                    st.session_state.pending_gps_name = None
+
+        with st.expander("Or search for a location manually"):
+            search_col, btn_col = st.columns([4, 1])
+            query = search_col.text_input("Exact Pickup Location", placeholder="e.g. Raipura Chowk", label_visibility="visible")
+            if btn_col.button("🔍 Search", use_container_width=True):
+                if len(query.strip()) < 3:
+                    st.warning("Please enter at least 3 letters.")
                 else:
-                    st.session_state.loc_candidates = results
+                    with st.spinner("Searching for location..."):
+                        results, err = geocode_location(query.strip(), user["village"])
+                    st.session_state.selected_location = None
+                    if err:
+                        st.session_state.loc_candidates = []
+                        st.error(f"Search failed: {err}. Please check your internet connection and try again.")
+                    elif not results:
+                        st.session_state.loc_candidates = []
+                        st.warning("No location found. Try a slightly different or more specific name (e.g. just the village name).")
+                    else:
+                        st.session_state.loc_candidates = results
 
-        if st.session_state.loc_candidates:
-            options = {
-                f"{c['display_name'].split(',')[0]}, {c['display_name'].split(',')[1] if ',' in c['display_name'] else ''}": c
-                for c in st.session_state.loc_candidates
-            }
-            pick = st.selectbox("Search results — choose one", list(options.keys()), key="loc_pick")
-            if st.button("✅ Confirm this location"):
-                chosen = options[pick]
-                st.session_state.selected_location = {
-                    "lat": float(chosen["lat"]), "lng": float(chosen["lon"]), "name": pick.strip()
+            if st.session_state.loc_candidates:
+                options = {
+                    f"{c['display_name'].split(',')[0]}, {c['display_name'].split(',')[1] if ',' in c['display_name'] else ''}": c
+                    for c in st.session_state.loc_candidates
                 }
+                pick = st.selectbox("Search results — choose one", list(options.keys()), key="loc_pick")
+                if st.button("✅ Confirm this location"):
+                    chosen = options[pick]
+                    st.session_state.selected_location = {
+                        "lat": float(chosen["lat"]), "lng": float(chosen["lon"]), "name": pick.strip()
+                    }
 
-    if st.session_state.selected_location:
-        loc = st.session_state.selected_location
-        st.success(f"📍 Selected: {loc['name']}")
-        m = folium.Map(location=[loc["lat"], loc["lng"]], zoom_start=16)
-        folium.Marker([loc["lat"], loc["lng"]]).add_to(m)
-        st_folium(m, height=180, width=None, returned_objects=[])
-
-    rates_res = sb.table("plastic_rates").select("type").order("type").execute()
-    plastic_types = [r["type"] for r in rates_res.data] or ["Mixed Plastic"]
-
-    with st.form("report_form"):
-        qty = st.number_input(T("quantity_kg"), min_value=1, step=1)
-        ptype = st.selectbox(T("plastic_type"), options=plastic_types)
-        desc = st.text_input(T("description"), placeholder="e.g. plastic + organic mix")
-        submit_report = st.form_submit_button(T("submit_report"), use_container_width=True)
-
-    if submit_report:
-        if not st.session_state.selected_location:
-            st.error("Please search and select a location first — the driver's route depends on it.")
-        else:
+        if st.session_state.selected_location:
             loc = st.session_state.selected_location
-            sb.table("garbage_reports").insert({
-                "shg_id": user["id"],
-                "village": user["village"],
-                "location_name": loc["name"],
-                "lat": loc["lat"],
-                "lng": loc["lng"],
-                "quantity_kg": qty,
-                "description": desc,
-                "plastic_type": ptype,
-                "status": "pending",
-                "otp": random_otp(),
-            }).execute()
-            st.success("Report submitted. It will now appear on a driver's route.")
-            st.session_state.selected_location = None
-            st.session_state.loc_candidates = []
-            st.session_state.last_gps = None
-            st.session_state.pending_gps_name = None
-            st.rerun()
+            st.success(f"📍 Selected: {loc['name']}")
+            m = folium.Map(location=[loc["lat"], loc["lng"]], zoom_start=16)
+            folium.Marker([loc["lat"], loc["lng"]]).add_to(m)
+            st_folium(m, height=180, width=None, returned_objects=[])
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        rates_res = sb.table("plastic_rates").select("type").order("type").execute()
+        plastic_types = [r["type"] for r in rates_res.data] or ["Mixed Plastic"]
+
+        with st.form("report_form"):
+            qty = st.number_input(T("quantity_kg"), min_value=1, step=1)
+            ptype = st.selectbox(T("plastic_type"), options=plastic_types)
+            desc = st.text_input(T("description"), placeholder="e.g. plastic + organic mix")
+            submit_report = st.form_submit_button(T("submit_report"), use_container_width=True)
+
+        if submit_report:
+            if not st.session_state.selected_location:
+                st.error("Please search and select a location first — the driver's route depends on it.")
+            else:
+                loc = st.session_state.selected_location
+                sb.table("garbage_reports").insert({
+                    "shg_id": user["id"],
+                    "village": user["village"],
+                    "location_name": loc["name"],
+                    "lat": loc["lat"],
+                    "lng": loc["lng"],
+                    "quantity_kg": qty,
+                    "description": desc,
+                    "plastic_type": ptype,
+                    "status": "pending",
+                    "otp": random_otp(),
+                }).execute()
+                st.success("Report submitted. It will now appear on a driver's route.")
+                st.session_state.selected_location = None
+                st.session_state.loc_candidates = []
+                st.session_state.last_gps = None
+                st.session_state.pending_gps_name = None
+                st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- History table (reuses the same query already fetched above for
     # the Environmental Impact / ETA cards — no need to hit the DB twice) ----
