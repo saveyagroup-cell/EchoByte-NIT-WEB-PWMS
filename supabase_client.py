@@ -34,6 +34,29 @@ SUPABASE_ANON_KEY = _get_secret("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cC
 BUCKET_NAME = "profile-photos"
 PICKUP_BUCKET_NAME = "pickup-photos"
 
+
+# ============================================================
+# SHG Training Video — Google Drive link. Jab bhi video badalni ho,
+# bas neeche wali TRAINING_VIDEO_DRIVE_URL line edit kar dena — koi SQL
+# ya DB change nahi chahiye.
+#
+# Kaise nikaalna hai link: Drive me video upload karo -> right-click ->
+# Share -> "Anyone with the link" ON karo -> link copy karke neeche
+# paste kar do (poora "https://drive.google.com/file/d/XXXX/view..."
+# wala link, jaisa Drive deta hai — code khud usse embeddable format me
+# convert kar lega).
+# ============================================================
+TRAINING_VIDEO_DRIVE_URL = _get_secret(
+    "TRAINING_VIDEO_DRIVE_URL",
+    "https://drive.google.com/file/d/1xU6XHqNEFL_u7kTifQ9787-gNnd_ckBe/view?usp=drive_link",  # <-- yahan apna Drive share link paste karo, quotes ke andar
+)
+
+
+def get_training_video_url() -> str | None:
+    """Training video ka link deta hai (upar wale constant se). Khaali
+    hone pe None deta hai (app tab 'video set nahi hai' dikha dega)."""
+    return TRAINING_VIDEO_DRIVE_URL or None
+
 _client: Client | None = None
 
 
